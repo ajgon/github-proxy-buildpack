@@ -1,0 +1,68 @@
+daemon off;
+#Heroku dynos have at least 4 cores.
+worker_processes <%= ENV['NGINX_WORKERS'] || 4 %>;
+
+events {
+    use epoll;
+    accept_mutex on;
+    worker_connections 1024;
+}
+
+http {
+    gzip on;
+    gzip_comp_level 2;
+    gzip_min_length 512;
+
+    server_tokens off;
+
+    log_format l2met 'measure#nginx.service=$request_time request_id=$http_x_request_id';
+    access_log logs/nginx/access.log l2met;
+    error_log logs/nginx/error.log;
+
+    include mime.types;
+    default_type application/octet-stream;
+    sendfile on;
+
+    client_body_timeout 30;
+
+    server {
+        listen <%= ENV["PORT"] %>;
+        server_name _;
+        keepalive_timeout 5;
+        set_secure_random_alphanum $cspNonce 32;
+
+        location / {
+          proxy_pass <%= 'http://' + ENV['ROUTE_TO_URL'].sub(%r{^[a-z]+://}, '').sub(%r{/+}, '') + '/' %>;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header Accept-Encoding "";
+          <% if ENV['HIDE_GITHUB_HEADERS'].to_i == 1 %>
+          proxy_hide_header X-GitHub-Request-Id;
+          proxy_hide_header X-Fastly-Request-ID;
+          proxy_hide_header X-Served-By;
+          proxy_hide_header X-Cache;
+          proxy_hide_header X-Cache-Hits;
+          proxy_hide_header X-Timer;
+          proxy_hide_header Via;
+          proxy_hide_header Age;
+          proxy_hide_header Server;
+          proxy_hide_header Access-Control-Allow-Origin;
+          <% end %>
+
+          <% {
+            'HTTP_REFERRER_POLICY' => 'strict-origin-when-cross-origin',
+            'HTTP_FEATURE_POLICY' => "accelerometer 'none'; ambient-light-sensor 'none'; autoplay 'none'; camera 'none'; fullscreen 'self'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; midi 'none'; payment 'none'; speaker 'none'; sync-xhr 'self'; usb 'none'; vr 'none';",
+            'HTTP_X_CONTENT_TYPE_OPTIONS' => 'nosniff',
+            'HTTP_X_PERMITTED_CROSS_DOMAIN_POLICIES' => 'none',
+            'HTTP_X_DOWNLOAD_OPTIONS' => 'noopen',
+            'HTTP_X_FRAME_OPTIONS' => 'SAMEORIGIN',
+            'HTTP_X_XSS_PROTECTION' => '1; mode=block'
+          }.merge(ENV.select { |name, _| name.start_with?('HTTP_') }).each do |header, value| %>
+          add_header <%= header[5..-1].capitalize.gsub(/_./) { |letter| '-' + letter[1].upcase  } %> "<%= value.gsub('"', '\"') %>";
+          <% end %>
+        }
+    }
+}
+
+

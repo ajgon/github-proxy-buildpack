@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# bin/detect <build-dir>
+echo 'github-proxy-buildpack'
+exit 0
