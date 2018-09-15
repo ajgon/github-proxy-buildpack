@@ -32,9 +32,23 @@ For more details how those parameters are handled, please refer to `config/nginx
 You can override `config/nginx.conf.erb` completely with your custom setup. To do this you need:
 
 * create an empty repository with `git init`
-* create a `Procfile` with `web: bin/start-nginx` content inside
 * create a `config/nginx.conf.erb` file with your contents
 * push those two files to your heroku application git repository
+
+## CSP Nonce
+
+Support for nonces is built in, and it's following the approach from
+[this excellent article](https://scotthelme.co.uk/csp-nonce-support-in-nginx/).
+From this buildpack perspective, you need to set a `CSP_NONCE_ID` variable which
+will be an ID of your nonce replaced by nginx. In your CSP header you need to use
+`$cspNonce` nginx variable. Example:
+
+```bash
+heroku config:set CSP_NONCE_ID="**CSP_NONCE**"
+heroku config:set HTTP_CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'nonce-$cspNonce';"
+# Somewhere in HTML page
+<script nonce="**CSP_NONCE**">alert('Hello World!!!');</script>
+```
 
 ## Dummy app
 
@@ -54,6 +68,5 @@ heroku config:set HTTP_EXPECT_CT="enforce, max-age=30" --app my-example-app
 heroku config:set HTTP_X_FRAME_OPTIONS=deny --app my-example-app
 heroku git:remote --app my-example-app
 git push heroku master
-curl -Iv https://my-example.app.herokuapp.com/
-
+curl -I https://my-example.app.herokuapp.com/
 ```
