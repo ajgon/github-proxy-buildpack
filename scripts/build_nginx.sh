@@ -9,15 +9,15 @@
 # Once the dyno has is 'up' you can open your browser and navigate
 # this dyno's directory structure to download the nginx binary.
 
-NGINX_VERSION=${NGINX_VERSION-1.13.11}
-PCRE_VERSION=${PCRE_VERSION-8.42}
+NGINX_VERSION=${NGINX_VERSION-1.19.8}
+PCRE_VERSION=${PCRE_VERSION-8.44}
 ZLIB_VERSION=${ZLIB_VERSION-1.2.11}
-NGX_DEVEL_KIT_VERSION=${NGX_DEVEL_KIT_VERSION-0.3.0}
+NGX_DEVEL_KIT_VERSION=${NGX_DEVEL_KIT_VERSION-0.3.1}
 SET_MISC_MODULE_VERSION=${SET_MISC_MODULE_VERSION-0.32}
 HEADERS_MORE_MODULE_VERSION=${HEADERS_MORE_MODULE_VERSION-0.33}
 
 nginx_tarball_url=http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
-pcre_tarball_url=ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz
+pcre_tarball_url=https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.gz
 zlib_url=http://zlib.net/zlib-${ZLIB_VERSION}.tar.gz
 ngx_devel_kit_url=https://github.com/simplresty/ngx_devel_kit/archive/v${NGX_DEVEL_KIT_VERSION}.tar.gz
 set_misc_module_url=https://github.com/openresty/set-misc-nginx-module/archive/v${SET_MISC_MODULE_VERSION}.tar.gz

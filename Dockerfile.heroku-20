@@ -1,0 +1,4 @@
+FROM heroku/heroku:20-build
+
+COPY scripts/build_nginx.sh .
+RUN bash build_nginx.sh
